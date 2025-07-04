@@ -4,39 +4,65 @@
     <meta charset="UTF-8">
     <title>Sales Prediction</title>
     <style>
-        .background-blur {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .left-column {
+            width: 50%;
+            background-color: #f3e6f9; /* soft lavender */
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .left-column h1 {
+            font-size: 32px;
+            color: rebeccapurple;
+            margin-bottom: 20px;
+        }
+
+        .left-column p {
+            font-size: 17px;
+            color: #4b0055;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .left-column ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            color: #5a0066;
+        }
+
+        .left-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .right-column {
+            width: 50%;
+            position: relative;
             background-image: url('{{ url_for("static", filename="background.jpg") }}');
             background-size: cover;
             background-position: center;
-            z-index: -1;
-            filter: blur(8px);
-            transform: scale(1.1);
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            position: relative;
         }
 
-        .container {
-            max-width: 500px;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 30px;
+        .form-overlay {
+            background-color: rgba(248, 240, 255, 0.92); /* pastel violet */
+            backdrop-filter: blur(8px);
+            padding: 40px;
             border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            margin: 30px;
-            z-index: 1;
+            width: 85%;
+            max-width: 480px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
         }
 
         h2 {
@@ -48,6 +74,7 @@
             display: block;
             margin-top: 15px;
             font-weight: bold;
+            color: #4b006e;
         }
 
         .input-with-dropdown {
@@ -64,7 +91,6 @@
             border: none;
             padding: 10px;
             margin-top: 0;
-            border-radius: 0;
             flex-grow: 1;
         }
 
@@ -77,6 +103,14 @@
             flex-basis: 30%;
             background-color: #f9f9f9;
             cursor: pointer;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
         }
 
         button {
@@ -102,116 +136,128 @@
         }
 
         .result {
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #e6ffe6;
-            color: #06470c;
-            border-left: 5px solid green;
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #fffff6;
+            color: #000000;
+            border-left: 5px solid #7a3db8;
+            border-radius: 6px;
             font-weight: bold;
-            border-radius: 8px;
         }
 
         details {
-            margin-top: 15px;
-            font-size: 0.95em;
+            margin-top: 12px;
+            font-size: 0.9em;
         }
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-                margin: 20px;
-            }
-
-            .input-with-dropdown {
+        @media (max-width: 1000px) {
+            body {
                 flex-direction: column;
+                height: auto;
             }
 
-            .input-with-dropdown input,
-            .input-with-dropdown select {
-                flex-basis: 100%;
+            .left-column,
+            .right-column {
                 width: 100%;
-                border-right: none;
+                height: auto;
             }
 
-            .input-with-dropdown input {
-                border-bottom: 1px solid #ccc;
+            .left-column {
+                padding: 30px 20px;
+            }
+
+            .form-overlay {
+                margin: 30px 0;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="background-blur"></div>
+<div class="left-column">
+    <h1>Agricultural Product Sales Prediction</h1>
+    <p>
+        Unlock the power of data-driven farming with our prediction tool. This platform helps you estimate how many kilograms of an agricultural product you’re likely to sell each month.
+    </p>
+    <ul>
+        <li>🌾 Track sales patterns for fruits, vegetables, and grains</li>
+        <li>📈 Improve decision-making for pricing and inventory</li>
+        <li>🎯 Focus on the most profitable product and time to sell</li>
+        <li>💡 Built for farmers, agro businesses, and supply chain managers</li>
+    </ul>
+</div>
 
-<div class="container">
-    <h2>Predict Units Sold (kg)</h2>
+<div class="right-column">
+    <div class="form-overlay">
+        <h2>Predict Units Sold (kg)</h2>
+        <form method="POST" action="/predict">
 
-    <form method="POST" action="/predict">
-        <label>Product Name:</label>
-        <div class="input-with-dropdown">
-            <input type="text" name="product" placeholder="Enter product"
-                   value="{{ form_data.product if form_data and form_data.product else '' }}">
-            <select name="product_select">
-                <option value="">-- Or choose from list --</option>
-                {% for p in products %}
-                    <option value="{{ p }}">{{ p }}</option>
-                {% endfor %}
-            </select>
-        </div>
+            <label>Product Name:</label>
+            <div class="input-with-dropdown">
+                <input type="text" name="product" placeholder="Enter product"
+                       value="{{ form_data.product if form_data and form_data.product else '' }}">
+                <select name="product_select">
+                    <option value="">-- Or choose from list --</option>
+                    {% for p in products %}
+                        <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <label>Units Shipped (kg):</label>
-        <div class="input-with-dropdown">
-            <input type="number" name="units_shipped_kg" step="0.5" placeholder="e.g. 200.5"
-                   value="{{ form_data.units_shipped_kg if form_data and form_data.units_shipped_kg else '' }}">
-            <select name="units_shipped_select">
-                <option value="">-- Or choose --</option>
-                {% for i in range(1, 2001) %}
-                    <option value="{{ i * 0.5 }}">{{ i * 0.5 }}</option>
-                {% endfor %}
-            </select>
-        </div>
+            <label>Units Shipped (kg):</label>
+            <div class="input-with-dropdown">
+                <input type="number" name="units_shipped_kg" step="0.5" placeholder="e.g. 200.5"
+                       value="{{ form_data.units_shipped_kg if form_data and form_data.units_shipped_kg else '' }}">
+                <select name="units_shipped_select">
+                    <option value="">-- Or choose --</option>
+                    {% for i in range(1, 2001) %}
+                        <option value="{{ i * 0.5 }}">{{ i * 0.5 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <label>Units On Hand (kg):</label>
-        <div class="input-with-dropdown">
-            <input type="number" name="units_on_hand_kg" step="0.5" placeholder="e.g. 100.5"
-                   value="{{ form_data.units_on_hand_kg if form_data and form_data.units_on_hand_kg else '' }}">
-            <select name="units_on_hand_select">
-                <option value="">-- Or choose --</option>
-                {% for i in range(1, 2001) %}
-                    <option value="{{ i * 0.5 }}">{{ i * 0.5 }}</option>
-                {% endfor %}
-            </select>
-        </div>
+            <label>Units On Hand (kg):</label>
+            <div class="input-with-dropdown">
+                <input type="number" name="units_on_hand_kg" step="0.5" placeholder="e.g. 100.5"
+                       value="{{ form_data.units_on_hand_kg if form_data and form_data.units_on_hand_kg else '' }}">
+                <select name="units_on_hand_select">
+                    <option value="">-- Or choose --</option>
+                    {% for i in range(1, 2001) %}
+                        <option value="{{ i * 0.5 }}">{{ i * 0.5 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <label>Price per kg (₦):</label>
-        <input type="number" name="price_per_kg" step="0.01" placeholder="e.g. 450" required
-               value="{{ form_data.price_per_kg if form_data and form_data.price_per_kg else '' }}">
+            <label>Price per kg (₦):</label>
+            <input type="number" name="price_per_kg" step="0.01" placeholder="e.g. 450" required
+                   value="{{ form_data.price_per_kg if form_data and form_data.price_per_kg else '' }}">
 
-        <label>Month:</label>
-        <div class="input-with-dropdown">
-            <input type="text" name="month" placeholder="Enter month"
-                   value="{{ form_data.month if form_data and form_data.month else '' }}">
-            <select name="month_select">
-                <option value="">-- Or choose --</option>
-                {% for m in months %}
-                    <option value="{{ m }}">{{ m }}</option>
-                {% endfor %}
-            </select>
-        </div>
+            <label>Month:</label>
+            <div class="input-with-dropdown">
+                <input type="text" name="month" placeholder="Enter month"
+                       value="{{ form_data.month if form_data and form_data.month else '' }}">
+                <select name="month_select">
+                    <option value="">-- Or choose --</option>
+                    {% for m in months %}
+                        <option value="{{ m }}">{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <button type="submit">Predict</button>
-        <a href="/" style="text-decoration: none;">
-            <button type="button" class="clear-button">Clear</button>
-        </a>
-    </form>
+            <button type="submit">Predict</button>
+            <a href="/" style="text-decoration: none;">
+                <button type="button" class="clear-button">Clear</button>
+            </a>
+        </form>
 
-    {% if prediction %}
-        <div class="result" role="alert">{{ prediction|safe }}</div>
-        <details>
-            <summary>What does this mean?</summary>
-            The prediction is an estimate based on your inputs. The confidence interval shows a range the actual value is likely to fall within.
-        </details>
-    {% endif %}
+        {% if prediction %}
+            <div class="result" role="alert">{{ prediction|safe }}</div>
+            <details>
+                <summary>What does this mean?</summary>
+                The prediction shows the expected sales with a confidence range. It helps you plan inventory and marketing decisions more effectively.
+            </details>
+        {% endif %}
+    </div>
 </div>
 
 </body>
